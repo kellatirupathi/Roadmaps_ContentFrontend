@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
-import Dashboard from './components/Dashboard/Dashboard';
 import Navbar from './components/Navbar/Navbar';
-import RoadmapsList from './components/RoadmapsList/RoadmapsList';
+import Dashboard from './components/Dashboard/Dashboard';
 import AddTechStackForm from './components/AddTechStackForm/AddTechStackForm';
 
 function App() {
@@ -23,14 +22,8 @@ function App() {
         <main className="main-content">
           <Container fluid="lg" className="py-4">
             <Routes>
-              {/* Home route - shows the dropdown only */}
-              <Route path="/" element={<Dashboard view="dropdown-only" />} />
-              
-              {/* All techstacks route - shows the header and all roadmaps list */}
-              <Route path="/alltechstacks" element={<Dashboard view="all-roadmaps" />} />
-              
-              {/* Roadmaps route - shows the published roadmaps list */}
-              <Route path="/roadmaps" element={<RoadmapsList />} />
+              {/* Tech Stacks route - shows all tech stacks */}
+              <Route path="/" element={<Dashboard view="all-roadmaps" />} />
               
               {/* New techstack route - shows the add form */}
               <Route path="/newtechstack" element={<AddTechStackForm onTechStackAdded={handleTechStackAdded} />} />
@@ -40,7 +33,6 @@ function App() {
             </Routes>
           </Container>
         </main>
-
       </div>
     </Router>
   );
