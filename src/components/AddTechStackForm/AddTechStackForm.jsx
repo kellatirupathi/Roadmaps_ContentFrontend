@@ -1,4 +1,3 @@
-// client/src/components/AddTechStackForm/AddTechStackForm.jsx
 import React, { useState } from 'react';
 import { Form, Button, Card, Spinner, Tabs, Tab, Table, Alert, Row, Col } from 'react-bootstrap';
 import { createTechStack } from '../../services/techStackService';
@@ -392,7 +391,6 @@ const AddTechStackForm = ({ onTechStackAdded }) => {
         setCsvTechStackName(suggestedName);
       }
       
-      setSuccess('CSV data processed successfully. Please review and make any needed changes before creating.');
     } catch (err) {
       setError(`Error processing CSV data: ${err.message}`);
     }
@@ -508,8 +506,8 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
     return (
       <div className="parsed-data-preview">
         <h5 className="mb-3">Processed Roadmap Items</h5>
-        <div className="table-responsive preview-table-wrapper">
-          <Table striped bordered hover size="sm" className="preview-table">
+        <div className="table-responsive">
+          <Table striped bordered hover>
             <thead>
               <tr>
                 <th>{headers.topic}</th>
@@ -523,14 +521,14 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                 <tr key={index}>
                   <td>{item.topic}</td>
                   <td>
-                    <ul className="mb-0 ps-3">
+                    <ul>
                       {item.subTopics.map((subtopic, i) => (
                         <li key={i}>{subtopic.name}</li>
                       ))}
                     </ul>
                   </td>
                   <td>
-                    <ul className="mb-0 ps-3">
+                    <ul>
                       {item.projects.map((project, i) => (
                         <li key={i}>{project.name}</li>
                       ))}
@@ -555,25 +553,25 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
   };
 
   return (
-    <Card className="add-tech-stack-form-card">
+    <Card>
       <Card.Header>
-        <h3 className="mb-0">Create New Tech Stack Roadmap</h3>
+        <h3>Create New Tech Stack Roadmap</h3>
       </Card.Header>
       <Card.Body>
         {error && <Alert variant="danger" onClose={() => setError(null)} dismissible>
-          <i className="fas fa-exclamation-circle me-2"></i>{error}
+          {error}
         </Alert>}
         
         {success && <Alert variant="success" onClose={() => setSuccess(null)} dismissible>
-          <i className="fas fa-check-circle me-2"></i>{success}
+          {success}
         </Alert>}
         
         <Tabs
           activeKey={activeTab}
           onSelect={(k) => setActiveTab(k)}
-          className="mb-4 nav-tabs-custom"
+          className="mb-3"
         >
-          <Tab eventKey="manual" title={<><i className="fas fa-edit me-2"></i>Manual Entry</>}>
+          <Tab eventKey="manual" title="Manual Entry">
             <Form onSubmit={handleSubmit}>
               <Row>
                 <Col md={6}>
@@ -584,7 +582,6 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder=""
                       required
                     />
                   </Form.Group>
@@ -598,15 +595,13 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                       value={formData.description}
                       onChange={handleChange}
                       rows={1}
-                      placeholder=""
                     />
                   </Form.Group>
                 </Col>
               </Row>
               
               {/* Add Custom Headers Section */}
-              <div className="mb-4">
-                <h5 className="mb-3">Customize Column Headers</h5>
+              <div className="mb-3">
                 <Row>
                   <Col md={3}>
                     <Form.Group className="mb-3">
@@ -656,66 +651,62 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
               </div>
               
               <div className="roadmap-items-section">
-                <div className="section-header d-flex justify-content-between align-items-center mb-3">
-                  <h4 className="mb-0">Roadmap Items</h4>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h4>Roadmap Items</h4>
                   <Button
-                    variant="outline-primary"
+                    variant="primary"
                     onClick={addRoadmapItem}
                     size="sm"
-                    className="add-item-btn"
                   >
-                    <i className="fas fa-plus me-1"></i> Add Another Item
+                    Add Another Item
                   </Button>
                 </div>
                 
                 {formData.roadmapItems.map((item, itemIndex) => (
-                  <div key={itemIndex} className="roadmap-item-form mb-4">
-                    <div className="item-header d-flex justify-content-between align-items-center">
-                      <h5 className="mb-0">Item #{itemIndex + 1}</h5>
+                  <div key={itemIndex} className="mb-4 p-3" style={{backgroundColor: '#f8f9fa', borderRadius: '4px'}}>
+                    <div className="d-flex justify-content-between align-items-center">
+                      <h5>Item #{itemIndex + 1}</h5>
                       <Button
-                        variant="outline-danger"
+                        variant="danger"
                         size="sm"
                         onClick={() => removeRoadmapItem(itemIndex)}
                         disabled={formData.roadmapItems.length <= 1}
-                        className="remove-item-btn"
                       >
-                        <i className="fas fa-trash-alt me-1"></i> Remove
+                        Remove
                       </Button>
                     </div>
                     
                     <Row className="mt-3">
-                      <Col md={6} lg={3}>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>{headers.topic} <span className="text-danger">*</span></Form.Label>
                           <Form.Control
                             type="text"
                             value={item.topic}
                             onChange={(e) => handleItemChange(itemIndex, 'topic', e.target.value)}
-                            placeholder=""
                             required
                           />
                         </Form.Group>
                       </Col>
-                      <Col md={6} lg={3}>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>{headers.subTopics}</Form.Label>
-                          <div className="input-list">
+                          <div>
                             {item.subTopics.map((subtopic, subtopicIndex) => (
                               <div key={subtopicIndex} className="d-flex mb-2">
                                 <Form.Control
                                   type="text"
                                   value={subtopic.name}
                                   onChange={(e) => handleSubtopicChange(itemIndex, subtopicIndex, e.target.value)}
-                                  placeholder=""
                                 />
                                 <Button
-                                  variant="outline-danger"
+                                  variant="danger"
                                   size="sm"
-                                  className="ms-2 remove-btn"
+                                  className="ms-2"
                                   onClick={() => removeSubtopic(itemIndex, subtopicIndex)}
                                   disabled={item.subTopics.length <= 1}
                                 >
-                                  <i className="fas fa-times"></i>
+                                  X
                                 </Button>
                               </div>
                             ))}
@@ -723,33 +714,31 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                               variant="link"
                               size="sm"
                               onClick={() => addSubtopic(itemIndex)}
-                              className="add-link-btn"
                             >
-                              <i className="fas fa-plus-circle me-1"></i> Add Another {headers.subTopics.replace(/s$/, '')}
+                              Add Another {headers.subTopics.replace(/s$/, '')}
                             </Button>
                           </div>
                         </Form.Group>
                       </Col>
-                      <Col md={6} lg={3}>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>{headers.projects}</Form.Label>
-                          <div className="input-list">
+                          <div>
                             {item.projects.map((project, projectIndex) => (
                               <div key={projectIndex} className="d-flex mb-2">
                                 <Form.Control
                                   type="text"
                                   value={project.name}
                                   onChange={(e) => handleProjectChange(itemIndex, projectIndex, e.target.value)}
-                                  placeholder=""
                                 />
                                 <Button
-                                  variant="outline-danger"
+                                  variant="danger"
                                   size="sm"
-                                  className="ms-2 remove-btn"
+                                  className="ms-2"
                                   onClick={() => removeProject(itemIndex, projectIndex)}
                                   disabled={item.projects.length <= 1}
                                 >
-                                  <i className="fas fa-times"></i>
+                                  X
                                 </Button>
                               </div>
                             ))}
@@ -757,20 +746,18 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                               variant="link"
                               size="sm"
                               onClick={() => addProject(itemIndex)}
-                              className="add-link-btn"
                             >
-                              <i className="fas fa-plus-circle me-1"></i> Add Another {headers.projects.replace(/s$/, '')}
+                              Add Another {headers.projects.replace(/s$/, '')}
                             </Button>
                           </div>
                         </Form.Group>
                       </Col>
-                      <Col md={6} lg={3}>
+                      <Col md={3}>
                         <Form.Group className="mb-3">
                           <Form.Label>{headers.status}</Form.Label>
                           <Form.Select
                             value={item.completionStatus}
                             onChange={(e) => handleItemChange(itemIndex, 'completionStatus', e.target.value)}
-                            className="status-select"
                           >
                             <option value="Yet to Start">Yet to Start</option>
                             <option value="In Progress">In Progress</option>
@@ -787,9 +774,7 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                 <Button
                   type="submit"
                   variant="primary"
-                  size="lg"
                   disabled={loading}
-                  className="create-btn"
                 >
                   {loading ? (
                     <>
@@ -797,20 +782,15 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                       <span className="ms-2">Creating...</span>
                     </>
                   ) : (
-                    <>
-                      <i className="fas fa-check-circle me-2"></i>
-                      Upload to DB
-                    </>
+                    "Upload to DB"
                   )}
                 </Button>
               </div>
             </Form>
           </Tab>
           
-          <Tab eventKey="csv" title={<><i className="fas fa-file-csv me-2"></i>CSV Upload</>}>
-            <div className="csv-upload-container">
-
-              
+          <Tab eventKey="csv" title="CSV Upload">
+            <div className="csv-upload-container">              
               <Form onSubmit={handleCsvSubmit}>
                 <Row>
                   <Col md={6}>
@@ -820,7 +800,6 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                         type="text"
                         value={csvTechStackName}
                         onChange={(e) => setCsvTechStackName(e.target.value)}
-                        placeholder=""
                         required
                       />
                     </Form.Group>
@@ -833,7 +812,6 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                         value={csvDescription}
                         onChange={(e) => setCsvDescription(e.target.value)}
                         rows={1}
-                        placeholder=""
                       />
                     </Form.Group>
                   </Col>
@@ -841,8 +819,8 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                 
                 {/* Display and allow editing of detected headers */}
                 {csvData.length > 0 && (
-                  <div className="mb-4">
-                    <h5 className="mb-3">CSV Headers</h5>
+                  <div className="mb-3">
+                    <h5>CSV Headers</h5>
                     <Row>
                       <Col md={3}>
                         <Form.Group className="mb-3">
@@ -892,24 +870,24 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                   </div>
                 )}
                 
-                <Form.Group className="mb-4">
+                <Form.Group className="mb-3">
                   <Form.Label>Upload CSV File</Form.Label>
                   <div 
-                    className={`csv-upload-zone ${dragActive ? 'drag-active' : ''}`}
+                    className={`p-3 border ${dragActive ? 'border-primary' : 'border-secondary'}`}
+                    style={{borderStyle: 'dashed', borderRadius: '4px'}}
                     onDragEnter={handleDrag}
                     onDragOver={handleDrag}
                     onDragLeave={handleDrag}
                     onDrop={handleDrop}
                   >
-                    <div className="upload-content text-center">
-                      <div className="upload-icon mb-3">
-                        <i className="fas fa-file-csv"></i>
+                    <div className="text-center">
+                      <div className="mb-3">
+                        <i className="fas fa-file-csv fa-2x"></i>
                       </div>
                       <p className="mb-3">
                         Drag & drop your CSV file here or 
                         <Button 
                           variant="link" 
-                          className="browse-link"
                           onClick={() => document.getElementById('csvFileInput').click()}
                         >
                           browse
@@ -923,7 +901,7 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                         className="d-none"
                       />
                       {csvFile && (
-                        <div className="selected-file">
+                        <div>
                           <i className="fas fa-file me-2"></i>
                           {csvFile.name}
                         </div>
@@ -937,10 +915,10 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                 </Form.Group>
                 
                 {csvData.length > 0 && (
-                  <div className="csv-preview mb-4">
-                    <h5 className="mb-3">CSV Preview (Original Data)</h5>
-                    <div className="table-responsive preview-table-wrapper">
-                      <Table striped bordered hover size="sm" className="preview-table">
+                  <div className="mb-3">
+                    <h5>CSV Preview (Original Data)</h5>
+                    <div className="table-responsive">
+                      <Table striped bordered hover>
                         <thead>
                           <tr>
                             {Object.keys(csvData[0]).map((header, index) => (
@@ -966,7 +944,7 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                         </tbody>
                       </Table>
                       {csvData.length > 5 && (
-                        <p className="text-muted preview-note">Showing 5 of {csvData.length} rows</p>
+                        <p className="text-muted">Showing 5 of {csvData.length} rows</p>
                       )}
                     </div>
                   </div>
@@ -979,9 +957,7 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                   <Button
                     type="submit"
                     variant="primary"
-                    size="lg"
                     disabled={loading || !parsedCsvData || !csvTechStackName}
-                    className="create-btn"
                   >
                     {loading ? (
                       <>
@@ -989,10 +965,7 @@ Trees & Graphs",Build a custom data structure implementation,Yet to Start`;
                         <span className="ms-2">Creating...</span>
                       </>
                     ) : (
-                      <>
-                        <i className="fas fa-check-circle me-2"></i>
-                        Upload to DB
-                      </>
+                      "Upload to DB"
                     )}
                   </Button>
                 </div>
