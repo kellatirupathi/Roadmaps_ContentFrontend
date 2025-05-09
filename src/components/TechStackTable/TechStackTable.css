@@ -202,7 +202,7 @@
 }
 
 .th-status {
-  width: 15%;
+  width: 10%;
 }
 
 .th-actions {
@@ -459,3 +459,130 @@
     width: 100%;
   }
 }
+/* Add these styles to TechStackTable.css */
+
+.roadmap-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: #f8f9fa;
+}
+
+.tech-stack-name-edit {
+  width: 100%;
+  max-width: 400px;
+}
+
+.tech-stack-name-input {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.75rem;
+}
+
+.tech-stack-name-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+  border-color: white;
+  outline: none;
+}
+
+/* Responsive styling for name editing */
+@media (max-width: 767.98px) {
+  .tech-stack-name-edit {
+    max-width: 100%;
+  }
+  
+  .tech-stack-name-input {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.65rem;
+  }
+}
+
+/* Headers Edit Section Styling */
+.headers-edit-section {
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #E0E0E0;
+ }
+ 
+ .headers-edit-row {
+  margin: 0;
+ }
+ 
+ .headers-input {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #E0E0E0;
+  background-color: white;
+ }
+ 
+ .headers-input:focus {
+  border-color: #4b6cb7;
+  box-shadow: 0 0 0 0.2rem rgba(75, 108, 183, 0.25);
+  outline: none;
+ }
+ 
+ /* Make headers section responsive */
+ @media (max-width: 767.98px) {
+  .headers-edit-section {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .headers-edit-row [class*='col-'] {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+  
+  .headers-input {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.5rem;
+  }
+  
+  .headers-label {
+    font-size: 0.75rem;
+  }
+ }
+ 
+ @media (max-width: 576px) {
+  .headers-edit-row {
+    flex-direction: column;
+  }
+  
+  .headers-edit-row [class*='col-'] {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .headers-edit-section {
+    padding: 0.5rem;
+  }
+ }
+ 
+ /* Animation for smooth transitions */
+ .headers-edit-section {
+  transition: all 0.3s ease;
+  opacity: 1;
+  max-height: 500px;
+  overflow: hidden;
+ }
+ 
+ .headers-edit-section.collapse-enter {
+  opacity: 0;
+  max-height: 0;
+ }
+ 
+ .headers-edit-section.collapse-enter-active {
+  opacity: 1;
+  max-height: 500px;
+ }
+ 
+ .headers-edit-section.collapse-exit {
+  opacity: 1;
+  max-height: 500px;
+ }
+ 
+ .headers-edit-section.collapse-exit-active {
+  opacity: 0;
+  max-height: 0;
+ }
