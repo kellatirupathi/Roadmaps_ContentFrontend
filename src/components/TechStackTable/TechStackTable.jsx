@@ -1,11 +1,21 @@
-// client/src/components/TechStackTable/TechStackTable.jsx
 import { useState } from 'react';
-import { Button, Form, Spinner, Alert } from 'react-bootstrap';
+import { Button, Form, Spinner, Alert, Row, Col } from 'react-bootstrap';
 import { updateTechStack, deleteRoadmapItem, addRoadmapItem, deleteTechStack } from '../../services/techStackService';
 import './TechStackTable.css';
 
 const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
   const [editMode, setEditMode] = useState(false);
+  const [nameEditMode, setNameEditMode] = useState(false);
+  const [headersEditMode, setHeadersEditMode] = useState(false);
+  const [techStackName, setTechStackName] = useState(techStackData.name);
+  const [customHeaders, setCustomHeaders] = useState(
+    techStackData.headers || {
+      topic: "Topic",
+      subTopics: "Sub-Topics",
+      projects: "Projects",
+      status: "Status"
+    }
+  );
   const [roadmapItems, setRoadmapItems] = useState(techStackData.roadmapItems || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newItem, setNewItem] = useState({
@@ -20,23 +30,39 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
   
-  // Get custom headers from techStackData or use defaults
-  const headers = techStackData.headers || {
-    topic: "Topic",
-    subTopics: "Sub-Topics",
-    projects: "Projects",
-    status: "Status"
-  };
-
-  // Toggle edit mode
+  // Toggle combined edit mode - now handles both item, name and headers editing
   const toggleEditMode = () => {
-    setEditMode(!editMode);
-    // Reset roadmapItems when canceling edit
     if (editMode) {
+      // If currently in edit mode, exit all edit modes
+      setEditMode(false);
+      setNameEditMode(false);
+      setHeadersEditMode(false);
+      
+      // Reset data
       setRoadmapItems(techStackData.roadmapItems || []);
+      setTechStackName(techStackData.name);
+      setCustomHeaders(techStackData.headers || {
+        topic: "Topic",
+        subTopics: "Sub-Topics",
+        projects: "Projects",
+        status: "Status"
+      });
       setShowAddForm(false);
       setSearchTerm('');
+    } else {
+      // Enter edit mode
+      setEditMode(true);
+      setNameEditMode(true);
+      setHeadersEditMode(true);
     }
+  };
+
+  // Handle header input change
+  const handleHeaderChange = (field, value) => {
+    setCustomHeaders({
+      ...customHeaders,
+      [field]: value
+    });
   };
 
   // Toggle add form
@@ -148,23 +174,57 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
     }
   };
 
-  // Save updated roadmap items
+  // Save all changes (name, headers and roadmap items)
   const handleSaveChanges = async () => {
+    // Validate tech stack name
+    if (nameEditMode && !techStackName.trim()) {
+      setError('Tech stack name cannot be empty');
+      return;
+    }
+
+    // Validate headers
+    if (headersEditMode && 
+       (!customHeaders.topic.trim() || 
+        !customHeaders.subTopics.trim() || 
+        !customHeaders.projects.trim() || 
+        !customHeaders.status.trim())) {
+      setError('Header fields cannot be empty');
+      return;
+    }
+
     try {
       setLoading(true);
       
-      // Update the tech stack with the modified roadmap items
-      // Keep the headers the same
-      const updatedTechStack = await updateTechStack(techStackData._id, {
-        roadmapItems: roadmapItems,
-        headers: techStackData.headers
-      });
+      // Create the update object
+      const updateData = {
+        roadmapItems: roadmapItems
+      };
+      
+      // Include name if it was edited
+      if (nameEditMode) {
+        updateData.name = techStackName.trim();
+      }
+      
+      // Include headers if they were edited
+      if (headersEditMode) {
+        updateData.headers = {
+          topic: customHeaders.topic.trim(),
+          subTopics: customHeaders.subTopics.trim(),
+          projects: customHeaders.projects.trim(),
+          status: customHeaders.status.trim()
+        };
+      }
+      
+      // Update the tech stack with all changes
+      const updatedTechStack = await updateTechStack(techStackData._id, updateData);
       
       // Update the parent component
       onUpdate(updatedTechStack.data);
       
       setLoading(false);
       setEditMode(false);
+      setNameEditMode(false);
+      setHeadersEditMode(false);
       setShowAddForm(false);
     } catch (err) {
       setError('Failed to save changes');
@@ -304,7 +364,21 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
     <div className="roadmap-container">
       <div className="roadmap-header">
         <div className="roadmap-header-left">
-          <h2 className="roadmap-title">{techStackData.name}</h2>
+          {nameEditMode ? (
+            <div className="tech-stack-name-edit">
+              <Form.Control
+                type="text"
+                value={techStackName}
+                onChange={(e) => setTechStackName(e.target.value)}
+                placeholder="Enter tech stack name"
+                className="tech-stack-name-input"
+              />
+            </div>
+          ) : (
+            <div className="tech-stack-name-display">
+              <h2 className="roadmap-title">{techStackData.name}</h2>
+            </div>
+          )}
         </div>
         
         <div className="roadmap-header-actions">
@@ -313,7 +387,7 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
               <i className="fas fa-search search-icon"></i>
               <input
                 type="text"
-                placeholder={`Search ${headers.topic.toLowerCase()}, ${headers.projects.toLowerCase()}...`}
+                placeholder={`Search ${customHeaders.topic.toLowerCase()}, ${customHeaders.projects.toLowerCase()}...`}
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="search-input"
@@ -338,7 +412,7 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
             title={editMode ? "Cancel editing" : "Edit roadmap"}
           >
             <i className={`fas ${editMode ? "fa-times" : "fa-edit"}`}></i>
-            <span className="button-text"></span>
+            <span className="button-text">{editMode ? "" : ""}</span>
           </Button>
           
           {/* Add delete button for the entire tech stack */}
@@ -355,6 +429,58 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
           )}
         </div>
       </div>
+      
+      {/* Headers Edit Section */}
+      {headersEditMode && (
+        <div className="headers-edit-section">
+          <Row className="headers-edit-row">
+            <Col md={3}>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="text"
+                  value={customHeaders.topic}
+                  onChange={(e) => handleHeaderChange('topic', e.target.value)}
+                  placeholder="Enter topic header"
+                  className="headers-input"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="text"
+                  value={customHeaders.subTopics}
+                  onChange={(e) => handleHeaderChange('subTopics', e.target.value)}
+                  placeholder="Enter sub-topics header"
+                  className="headers-input"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="text"
+                  value={customHeaders.projects}
+                  onChange={(e) => handleHeaderChange('projects', e.target.value)}
+                  placeholder="Enter projects header"
+                  className="headers-input"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group className="mb-2">
+                <Form.Control
+                  type="text"
+                  value={customHeaders.status}
+                  onChange={(e) => handleHeaderChange('status', e.target.value)}
+                  placeholder="Enter status header"
+                  className="headers-input"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+        </div>
+      )}
       
       {/* Delete confirmation */}
       {deleteConfirmation && (
@@ -404,22 +530,23 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
         </Alert>
       )}
       
+      {/* Add Form */}
       {editMode && showAddForm && (
         <div className="add-form-container">
           <div className="form-grid">
             <div className="form-group">
-              <Form.Label>{headers.topic} <span className="text-danger">*</span></Form.Label>
+              <Form.Label>{customHeaders.topic} <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 type="text"
                 value={newItem.topic}
                 onChange={(e) => handleNewItemChange('topic', e.target.value)}
-                placeholder={`Enter ${headers.topic.toLowerCase()}`}
+                placeholder={`Enter ${customHeaders.topic.toLowerCase()}`}
                 className="form-control-sm"
               />
             </div>
             
             <div className="form-group">
-              <Form.Label>{headers.subTopics}</Form.Label>
+              <Form.Label>{customHeaders.subTopics}</Form.Label>
               <div className="field-list">
                 {newItem.subTopics.map((subtopic, index) => (
                   <div key={index} className="field-item">
@@ -427,7 +554,7 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                       type="text"
                       value={subtopic.name}
                       onChange={(e) => handleNewItemSubtopicChange(index, e.target.value)}
-                      placeholder={`Enter ${headers.subTopics.toLowerCase()}`}
+                      placeholder={`Enter ${customHeaders.subTopics.toLowerCase()}`}
                       className="form-control-sm"
                     />
                     <Button
@@ -446,13 +573,13 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                   className="add-link"
                   onClick={addNewItemSubtopic}
                 >
-                  <i className="fas fa-plus"></i> Add {headers.subTopics.replace(/s$/, '')}
+                  <i className="fas fa-plus"></i> Add {customHeaders.subTopics.replace(/s$/, '')}
                 </Button>
               </div>
             </div>
             
             <div className="form-group">
-              <Form.Label>{headers.projects}</Form.Label>
+              <Form.Label>{customHeaders.projects}</Form.Label>
               <div className="field-list">
                 {newItem.projects.map((project, index) => (
                   <div key={index} className="field-item">
@@ -460,7 +587,7 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                       type="text"
                       value={project.name}
                       onChange={(e) => handleNewItemProjectChange(index, e.target.value)}
-                      placeholder={`Enter ${headers.projects.toLowerCase()}`}
+                      placeholder={`Enter ${customHeaders.projects.toLowerCase()}`}
                       className="form-control-sm"
                     />
                     <Button
@@ -479,13 +606,13 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                   className="add-link"
                   onClick={addNewItemProject}
                 >
-                  <i className="fas fa-plus"></i> Add {headers.projects.replace(/s$/, '')}
+                  <i className="fas fa-plus"></i> Add {customHeaders.projects.replace(/s$/, '')}
                 </Button>
               </div>
             </div>
             
             <div className="form-group">
-              <Form.Label>{headers.status}</Form.Label>
+              <Form.Label>{customHeaders.status}</Form.Label>
               <Form.Select
                 value={newItem.completionStatus}
                 onChange={(e) => handleNewItemChange('completionStatus', e.target.value)}
@@ -529,10 +656,10 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
         <table className="roadmap-table">
           <thead>
             <tr>
-              <th className="th-topic">{headers.topic.toUpperCase()}</th>
-              <th className="th-subtopics">{headers.subTopics.toUpperCase()}</th>
-              <th className="th-projects">{headers.projects.toUpperCase()}</th>
-              <th className="th-status">{headers.status.toUpperCase()}</th>
+              <th className="th-topic">{customHeaders.topic.toUpperCase()}</th>
+              <th className="th-subtopics">{customHeaders.subTopics.toUpperCase()}</th>
+              <th className="th-projects">{customHeaders.projects.toUpperCase()}</th>
+              <th className="th-status">{customHeaders.status.toUpperCase()}</th>
               {editMode && <th className="th-actions">ACTIONS</th>}
             </tr>
           </thead>
@@ -598,7 +725,7 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                               className="form-control-sm"
                             />
                             {item.projects.length > 1 && (
-                                <Button
+                              <Button
                                 variant="outline-danger"
                                 size="sm"
                                 className="remove-btn"
@@ -630,21 +757,10 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                     )}
                   </td>
                   <td>
-                    {editMode ? (
-                      <Form.Select
-                        value={item.completionStatus}
-                        onChange={(e) => handleItemChange(index, 'completionStatus', e.target.value)}
-                        className="form-select-sm status-select"
-                      >
-                        <option value="Yet to Start">Yet to Start</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                      </Form.Select>
-                    ) : (
-                      <span className={`status-badge ${item.completionStatus.toLowerCase().replace(' ', '-')}`}>
-                        {item.completionStatus}
-                      </span>
-                    )}
+                    {/* Removed the Status edit dropdown and showing only static text */}
+                    <span className={`status-badge ${item.completionStatus.toLowerCase().replace(' ', '-')}`}>
+                      {item.completionStatus}
+                    </span>
                   </td>
                   {editMode && (
                     <td className="actions-col">
@@ -667,7 +783,7 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                   {searchTerm ? (
                     <>
                       <i className="fas fa-search fa-lg mb-2"></i>
-                      <p>No matching {headers.topic.toLowerCase()} found</p>
+                      <p>No matching {customHeaders.topic.toLowerCase()} found</p>
                       <Button 
                         variant="outline-secondary" 
                         size="sm" 
@@ -679,7 +795,7 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                   ) : (
                     <>
                       <i className="fas fa-clipboard-list fa-lg mb-2"></i>
-                      <p>No {headers.topic.toLowerCase()} added yet</p>
+                      <p>No {customHeaders.topic.toLowerCase()} added yet</p>
                       {editMode && (
                         <Button 
                           variant="primary" 
@@ -687,7 +803,7 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
                           onClick={toggleAddForm}
                         >
                           <i className="fas fa-plus me-1"></i>
-                          Add {headers.topic}
+                          Add {customHeaders.topic}
                         </Button>
                       )}
                     </>
@@ -709,26 +825,30 @@ const TechStackTable = ({ techStackData, onUpdate, onDelete }) => {
               className="me-2"
             >
               <i className="fas fa-plus me-1"></i>
-              Add {headers.topic}
+              Add {customHeaders.topic}
             </Button>
           )}
           
-          {roadmapItems.length > 0 && (
-            <Button
-              variant="primary"
-              onClick={handleSaveChanges}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-                  <span className="ms-2">Saving...</span>
-                </>
-              ) : (
-                'Save Changes'
-              )}
-            </Button>
-          )}
+          <Button
+            variant="primary"
+            onClick={handleSaveChanges}
+            disabled={loading || 
+                     (nameEditMode && !techStackName.trim()) || 
+                     (headersEditMode && 
+                      (!customHeaders.topic.trim() || 
+                       !customHeaders.subTopics.trim() || 
+                       !customHeaders.projects.trim() || 
+                       !customHeaders.status.trim()))}
+          >
+            {loading ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                <span className="ms-2">Saving...</span>
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </Button>
         </div>
       )}
     </div>
