@@ -1,11 +1,11 @@
-// client/src/components/Navbar/Navbar.jsx with loading state
 import { useState, useEffect } from 'react';
 import { Link, useLocation, NavLink, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 
-const Navbar = ({ setPageLoading }) => {
+const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('/');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -24,6 +24,11 @@ const Navbar = ({ setPageLoading }) => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
+
+  // Set active section based on location
+  useEffect(() => {
+    setActiveSection(location.pathname);
+  }, [location]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -54,25 +59,16 @@ const Navbar = ({ setPageLoading }) => {
     setMobileMenuOpen(false);
   }, [location]);
 
-  // Handle All Techstacks click with loading
-  const handleAllTechStacksClick = (e) => {
-    // If we're already on the all techstacks page, prevent default and do nothing
-    if (location.pathname === '/alltechstacks') {
+  // Handle navigation
+  const handleNavigation = (path, e) => {
+    // If we're already on the path, prevent default and do nothing
+    if (location.pathname === path) {
       e.preventDefault();
       return;
     }
     
-    // Set loading state to true
-    setPageLoading(true);
-    
-    // Navigate to all techstacks page
-    navigate('/alltechstacks');
-    
-    // Reset loading state after a delay to simulate loading
-    // In a real app, this would be handled by the data fetching logic
-    setTimeout(() => {
-      setPageLoading(false);
-    }, 500);
+    // Navigate to path
+    navigate(path);
   };
 
   return (
@@ -81,9 +77,12 @@ const Navbar = ({ setPageLoading }) => {
         {/* Logo with link to home */}
         <Link to="/" className="navbar-brand">
           <div className="navbar-logo">
-            <i className="fas fa-layer-group"></i>
+            <img src="/logo.svg" alt="Tech Stack Roadmap" className="logo-image" />
           </div>
-          <span className="brand-text">NIAT Roadmaps</span>
+          <div className="brand-container">
+            <span className="brand-text">NIAT</span>
+            <span className="brand-subtext">Tech Stacks</span>
+          </div>
         </Link>
         
         {/* Mobile menu toggle */}
@@ -97,56 +96,50 @@ const Navbar = ({ setPageLoading }) => {
           <span></span>
         </button>
         
-        {/* Navigation items */}
+        {/* Navigation items - Only Tech Stacks and New Stack */}
         <div className={`navbar-menu ${mobileMenuOpen ? 'open' : ''}`}>
           <div className="navbar-actions">
             <div className="nav-buttons">
-              {/* Dashboard Button */}
+              {/* All Techstacks Button */}
               <NavLink 
                 to="/" 
                 className={({isActive}) => 
-                  isActive && location.pathname === "/" ? "dashboard-btn active-nav-btn" : "dashboard-btn"
+                  isActive ? "nav-btn techstacks-btn active-nav-btn" : "nav-btn techstacks-btn"
                 }
-                end
+                onClick={(e) => handleNavigation('/', e)}
               >
-                <i className="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
+                <i className="fas fa-layer-group"></i>
+                <span>Tech Stacks</span>
               </NavLink>
               
-              {/* All Techstacks Button with click handler for loading state */}
-              <NavLink 
-                to="/alltechstacks" 
-                className={({isActive}) => 
-                  isActive ? "roadmaps-btn active-nav-btn" : "roadmaps-btn"
-                }
-                onClick={handleAllTechStacksClick}
-              >
-                <i className="fas fa-list"></i>
-                <span>All Techstacks</span>
-              </NavLink>
-              
-              <NavLink 
-                to="/roadmaps" 
-                className={({isActive}) => 
-                  isActive ? "roadmaps-btn active-nav-btn" : "roadmaps-btn"
-                }
-              >
-                <i className="fas fa-map"></i>
-                <span>Roadmaps</span>
-              </NavLink>
-              
+              {/* New Techstack Button */}
               <NavLink 
                 to="/newtechstack" 
                 className={({isActive}) => 
-                  isActive ? "add-tech-stack-btn active-nav-btn" : "add-tech-stack-btn"
+                  isActive ? "nav-btn add-tech-stack-btn active-nav-btn" : "nav-btn add-tech-stack-btn"
                 }
+                onClick={(e) => handleNavigation('/newtechstack', e)}
               >
-                <i className="fas fa-plus"></i>
-                <span>New Tech Stack</span>
+                <div className="add-icon-wrapper">
+                  <i className="fas fa-plus"></i>
+                </div>
+                <span>New Stack</span>
               </NavLink>
+            </div>
+            
+            {/* User Profile (Optional) */}
+            <div className="user-profile">
+              <div className="user-avatar">
+                <i className="fas fa-user"></i>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Progress bar for page transitions */}
+      <div className="nav-progress-container">
+        <div className={`nav-progress-bar ${activeSection !== '/' ? 'animate' : ''}`}></div>
       </div>
     </nav>
   );
